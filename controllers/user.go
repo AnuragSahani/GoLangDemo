@@ -18,9 +18,8 @@ func NewUserController(s *mgo.Session) *UserController {
 	return &UserController{s}
 }
 
-func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request, p httprouter.Param) {
-	id := p.Byname("id")
-
+func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	id := p.ByName("id")
 	if !bson.IsObjectIdHex(id) {
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -44,7 +43,7 @@ func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request, p httpr
 }
 
 //@POST method that's we don't need any Perms
-func (uc UserController)CreateUser(w http.ResponseWriter,r *http.Request ,_ httprouter.Param ){
+func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	u := models.User{}
 
 	json.NewDecoder(r.Body).Decode(&u)
@@ -53,31 +52,31 @@ func (uc UserController)CreateUser(w http.ResponseWriter,r *http.Request ,_ http
 
 	uc.session.DB("mongo-golang").C("users").Insert(u)
 
-	uj, err :=json.Marshal(u)
+	uj, err := json.Marshal(u)
 
-	if err!= nil {
+	if err != nil {
 		fmt.Println(err)
 	}
-	w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprintf(w, "%s\n", uj)
 }
 
 //Here we need id to delete the data from data base thats why we need perms
-func (uc UserController)DeleteUser(w http.ResponseWriter, r *http.Request, p httprouter.Param  ){
-	id :=p.ByName("id")
-
-	if !bson.IsObjectIdHex(id){
+func (uc UserController) DeleteUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	id := p.ByName("id")
+	//id := p.Key
+	if !bson.IsObjectIdHex(id) {
 		w.WriteHeader(404)
 		return
 	}
 
 	oid := bson.ObjectIdHex(id)
 
-	if err := uc.session.DB("mongo-golang").C("users").RemoveId(oid); err != nil{
+	if err := uc.session.DB("mongo-golang").C("users").RemoveId(oid); err != nil {
 		w.WriteHeader(404)
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w,"Deleted User",oid,"\n")
+	fmt.Fprint(w, "Deleted User", oid, "\n")
 }
