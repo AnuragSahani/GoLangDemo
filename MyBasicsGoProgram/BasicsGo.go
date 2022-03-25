@@ -100,4 +100,6 @@ func main() {
 	var arr1 = [...]int{1, 2, 3, 4, 6, 5, 5, 6, 6, 6, 6, 6, 0}
 	fmt.Println(arr1)
 
+	//HI this is for demo purpose
+
 }
